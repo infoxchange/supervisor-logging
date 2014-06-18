@@ -14,18 +14,5 @@
 # limitations under the License.
 
 """
-Send received events to a syslog instance.
+Module placeholder for tests.
 """
-
-
-def main():
-    """
-    Main application loop.
-    """
-
-    while True:
-        pass
-
-
-if __name__ == '__main__':
-    main()
