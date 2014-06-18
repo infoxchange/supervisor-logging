@@ -1,0 +1,277 @@
+#!/usr/bin/env python
+# pylint:disable=invalid-name
+"""
+Git pre-commit hook for performing quality checks on python code using pep8
+and pylint
+"""
+
+from __future__ import print_function
+
+import atexit
+
+import os
+import os.path
+
+from optparse import OptionParser
+
+import re
+
+import shutil
+
+from subprocess import Popen, PIPE, check_call, CalledProcessError
+
+import sys
+
+import tempfile
+
+#
+# Threshold for code to pass the Pylint test. 10 is the highest score Pylint
+# will give to any peice of code.
+#
+_PYLINT_PASS_THRESHOLD = 10
+
+PEP8_CONF = 'conf/pep8.conf'
+
+PYLINT_CONF = 'conf/pylint.conf'
+
+JSHINT_CONF = 'conf/jshint.conf'
+
+
+def output(command):
+    """
+    Read the command output regardless of the exit code
+    """
+    command = command.split()
+    sub = Popen(command, stdout=PIPE)
+    sub.wait()
+    return sub.stdout.read().decode()
+
+
+class Main(object):
+    """
+    Check the Python code in the project.
+    """
+    def __init__(self, force=False):
+        """
+        Initialise the checker. Set @force to True to check all the files
+        and not just the changed ones.
+        """
+        self.force = force
+
+    def pep8(self):
+        """
+        Run pep8 on the project.
+        Nothing short of perfect will do for this.
+        """
+
+        import pep8
+
+        pep_opts = {}
+        if os.path.exists(PEP8_CONF):
+            pep_opts['config_file'] = PEP8_CONF
+
+        style = pep8.StyleGuide(**pep_opts)
+        report = style.check_files((self.index,))
+        count = report.total_errors
+        if count > 0:
+            print("Project failed pep8 check: %d error(s)." % count)
+            cmd = "pep8 "
+            if 'config_file' in pep_opts:
+                cmd += "--config=%s " % pep_opts['config_file']
+            cmd += "."
+            print("Re-run with:\n%s\n" % cmd)
+            return False
+
+        return True
+
+    def pylint(self):
+        """
+        Run PyLint on the project.
+        """
+
+        # Build a list of targets
+        targets = []
+        modules = self.modules()
+        for module in modules:
+            targets.append(module)
+        for file_ in self.changed_py_files():
+            if not any(file_.startswith(m) for m in modules):
+                targets.append(file_)
+
+        ok = True
+        for target in targets:
+            cmd = 'pylint'
+
+            if os.path.exists(PYLINT_CONF):
+                cmd += ' --rcfile=' + PYLINT_CONF
+
+            cmd += ' %%s%s' % target
+
+            result = output(cmd % self.index)
+
+            #
+            # Get the rating from the result
+            #
+            rating = pylint_rating(result)
+            if rating is not None and rating < _PYLINT_PASS_THRESHOLD:
+                ok = False
+                print(
+                    "%s failed PyLint check (scored %s, min allowed is %s)"
+                    % (target, rating, _PYLINT_PASS_THRESHOLD)
+                )
+                print("Re-run with:\n%s\n" % (cmd % ''))
+
+        return ok
+
+    def jshint(self):
+        """
+        Run jshint on the project.
+        Nothing short of perfect will do for this either.
+        """
+
+        jsargs = ('jshint',)
+
+        if os.path.exists(JSHINT_CONF):
+            jsargs += ('-c', JSHINT_CONF)
+
+        try:
+            check_call(jsargs + tuple(self.changed_js_files()))
+        except CalledProcessError:
+            print("JSHint failed")
+            print("Re-run with:\n%s\n" % (' '.join(jsargs),))
+            return False
+
+        return True
+
+    def copy_index(self):
+        """
+        Create a copy of index in a temporary directory.
+        """
+        # pylint:disable=attribute-defined-outside-init
+        self.index = tempfile.mkdtemp() + '/'
+        output('git checkout-index --prefix=%s -af' % self.index)
+
+    # pylint:disable=no-self-use
+    def changed_files(self):
+        """
+        A list of files changed in the index.
+        """
+        if self.force:
+            cmd = 'git ls-tree -r --name-only HEAD'
+        else:
+            cmd = 'git diff --staged --diff-filter=ACMRTUXB --name-only HEAD'
+        return output(cmd).split()
+
+    def changed_py_files(self):
+        """
+        A list of Python files changed in the index
+        """
+        def is_py_file(filename):
+            """
+            Determine whether a script is a Python file
+            """
+            if not os.path.exists(filename):
+                return False
+            if filename.endswith('.py'):
+                return True
+
+            with open(filename, 'r') as file_:
+                first_line = file_.readline().strip()
+            return '#!' in first_line and 'python' in first_line
+
+        try:
+            return self._changed_py_files
+        except AttributeError:
+            # pylint:disable=attribute-defined-outside-init
+            self._changed_py_files = \
+                [f for f in self.changed_files() if is_py_file(f)]
+            return self._changed_py_files
+
+    def changed_js_files(self):
+        """
+        A list of Javascript files changed in the index
+        """
+
+        try:
+            with open('.jshintignore') as file_:
+                ignore = tuple(f.strip() for f in file_.readlines())
+        except IOError:
+            ignore = ()
+
+        def is_js_file(filename):
+            """
+            Determine whether a script is a Javascript file
+            """
+            if not os.path.exists(filename):
+                return False
+            elif filename.startswith(ignore):
+                return False
+            elif filename.endswith('.js'):
+                return True
+            else:
+                return False
+
+        try:
+            return self._changed_js_files
+        except AttributeError:
+            # pylint:disable=attribute-defined-outside-init
+            self._changed_js_files = \
+                [f for f in self.changed_files() if is_js_file(f)]
+            return self._changed_js_files
+
+    def modules(self):
+        """
+        A list of Python modules in the checkout.
+        """
+        def is_module(module):
+            """
+            Determine whether a directory contains a Python module.
+            """
+            return os.path.exists(os.path.join(module, '__init__.py'))
+        return list(m for m in os.listdir(self.index) if is_module(m))
+
+    def cleanup(self):
+        """
+        Delete temporary files.
+        """
+        shutil.rmtree(self.index, ignore_errors=True)
+
+    def main(self):
+        """
+        Run all the necessary checks.
+        """
+        if not self.changed_py_files() and \
+           not self.changed_js_files() and \
+           not self.force:
+            print("No source files changed. Pre-commit tests skipped.")
+            return True
+        atexit.register(self.cleanup)
+        self.copy_index()
+        good = [func() for func in (self.pep8, self.pylint, self.jshint)]
+        if all(good):
+            print("Your code looks good. Continuing with commit.")
+            return True
+        else:
+            print("Pre-commit tests failed.")
+            return False
+
+
+def pylint_rating(result):
+    """
+    Extract the rating rating from PyLint output.
+    """
+
+    if result == '':
+        return None
+    rating = re.search(r'Your code has been rated at ([-\d\.]+)/10', result)
+    return float(rating.group(1))
+
+
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-f', '--force', action='store_true', dest='force',
+                      help='force a check even if no Python files changed')
+    (options, args) = parser.parse_args()
+    hook = Main(**options.__dict__)
+    success = hook.main()
+    sys.exit(0 if success else 1)

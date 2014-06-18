@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+/*.egg
+/.coverage
+/build
+/dist
+/supervisor-logging.egg-info
+/htmlcov

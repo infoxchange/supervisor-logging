@@ -1,0 +1,23 @@
+language: python
+python:
+    - "3.4"
+    - "3.3"
+    - "3.2"
+    - "2.7"
+install:
+    - pip install -r dev_requirements.txt
+    - pip install coveralls
+script:
+    - .githooks/pre-commit -f
+    - ./runtests.sh
+after_success:
+    - coveralls
+deploy:
+    provider: pypi
+    user: ixa
+    password:
+        secure: KotqwXcFnooWKlSp1jM98898loE9ugWpba7tXGcDFuHhXQGT/wXtNgzROa2EhPxs7IYfQtxq4HD3dadYSziuUzHRTTjg5YUiW9Gx4N0gFtfthraroKu4IB62B9k84YPmxIIZZNvkJOSd1Ip5x2/+TJntPcroi0UK4GFRhLmcOKM=
+    server: https://pypi.python.org/pypi
+    on:
+        branch: release
+        python: 3.4
