@@ -129,13 +129,18 @@ class Main(object):
         Nothing short of perfect will do for this either.
         """
 
+        js_files = self.changed_js_files()
+
+        if not js_files:
+            return True
+
         jsargs = ('jshint',)
 
         if os.path.exists(JSHINT_CONF):
             jsargs += ('-c', JSHINT_CONF)
 
         try:
-            check_call(jsargs + tuple(self.changed_js_files()))
+            check_call(jsargs + tuple(js_files))
         except CalledProcessError:
             print("JSHint failed")
             print("Re-run with:\n%s\n" % (' '.join(jsargs),))
