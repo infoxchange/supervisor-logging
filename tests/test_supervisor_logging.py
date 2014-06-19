@@ -18,6 +18,8 @@ Test supervisor_logging.
 """
 
 import os
+import re
+import socket
 import SocketServer as socketserver
 import subprocess
 import threading
@@ -25,6 +27,23 @@ import threading
 from time import sleep
 
 from unittest import TestCase
+
+
+def strip_volatile(message):
+    """
+    Strip volatile parts (PID, datetime) from a logging message.
+    """
+
+    volatile = (
+        (r'\[\d+\]', '[PID]'),
+        (socket.gethostname(), 'HOSTNAME'),
+        (r'\w{3} \d{2} \d{2}:\d{2}:\d{2}', 'DATETIME'),
+    )
+
+    for regexp, replacement in volatile:
+        message = re.sub(regexp, replacement, message)
+
+    return message
 
 
 class SupervisorLoggingTestCase(TestCase):
@@ -67,9 +86,10 @@ class SupervisorLoggingTestCase(TestCase):
                 sleep(10)
 
                 self.assertEqual(
-                    messages,
+                    list(map(strip_volatile, messages)),
                     [
-                        'Test message',
+                        '<14>DATETIME HOSTNAME messages[PID]: ' +
+                        'Test message \n\x00',
                     ]
                 )
             finally:
