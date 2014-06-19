@@ -10,7 +10,7 @@ deploy:
     provider: pypi
     user: ixa
     password:
-        secure: KotqwXcFnooWKlSp1jM98898loE9ugWpba7tXGcDFuHhXQGT/wXtNgzROa2EhPxs7IYfQtxq4HD3dadYSziuUzHRTTjg5YUiW9Gx4N0gFtfthraroKu4IB62B9k84YPmxIIZZNvkJOSd1Ip5x2/+TJntPcroi0UK4GFRhLmcOKM=
+        secure: "i/CUjDVtSLg74kuLlKCAMAxOrj6WkxZpsXZG4Cz+30S5LXVqhgRfm3Ac0OY4LwMepksTNAqUUcV81p2Vf05y+1fp9q2d6g1C5gG+80pAaO7rDlRA6ce1tRjQmT4YrPDp9V5ngY5R1Y9ZmKuRKP6XYMJb5tzVfPE+JxyXneC9Ez8="
     server: https://pypi.python.org/pypi
     on:
         branch: release
