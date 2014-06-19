@@ -102,7 +102,6 @@ def main():
     Main application loop.
     """
 
-    print("start", file=sys.stderr)
     env = os.environ
     handler = SysLogHandler(
         address=(env['SYSLOG_SERVER'], int(env['SYSLOG_PORT'])),
