@@ -36,8 +36,8 @@ def strip_volatile(message):
 
     volatile = (
         (r'\[\d+\]', '[PID]'),
-        (socket.gethostname(), 'HOSTNAME'),
-        (r'\w{3} \d{2} \d{2}:\d{2}:\d{2}', 'DATETIME'),
+        (socket.gethostname(), 'HOST'),
+        (r'\w{3} \d{2} \d{2}:\d{2}:\d{2}', 'DATE'),
     )
 
     for regexp, replacement in volatile:
@@ -50,6 +50,8 @@ class SupervisorLoggingTestCase(TestCase):
     """
     Test logging.
     """
+
+    maxDiff = None
 
     def test_logging(self):
         """
@@ -83,14 +85,12 @@ class SupervisorLoggingTestCase(TestCase):
             )
             try:
 
-                sleep(3)
+                sleep(11)
 
                 self.assertEqual(
                     list(map(strip_volatile, messages)),
-                    [
-                        '<14>DATETIME HOSTNAME messages[PID]: ' +
-                        'Test message \n\x00',
-                    ]
+                    ['<14>DATE HOST messages[PID]: Test {0} \n\x00'.format(i)
+                     for i in range(5)]
                 )
             finally:
                 supervisor.terminate()

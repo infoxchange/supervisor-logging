@@ -81,10 +81,10 @@ def supervisor_events(stdin, stdout):
     An event stream from Supervisor.
     """
 
-    stdout.write('READY\n')
-    stdout.flush()
-
     while True:
+        stdout.write('READY\n')
+        stdout.flush()
+
         line = stdin.readline()
         headers = get_headers(line)
 
@@ -93,7 +93,7 @@ def supervisor_events(stdin, stdout):
 
         yield event_headers, event_data
 
-        stdout.write('RESULT %s\n%s' % (len(payload), payload))
+        stdout.write('RESULT 2\nOK')
         stdout.flush()
 
 
