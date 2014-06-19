@@ -103,11 +103,18 @@ def main():
     """
 
     env = os.environ
+
+    try:
+        host = env['SYSLOG_SERVER']
+        port = int(env['SYSLOG_PORT'])
+        socktype = socket.SOCK_DGRAM if env['SYSLOG_PROTO'] == 'udp' \
+            else socket.SOCK_STREAM
+    except KeyError:
+        sys.exit("SYSLOG_SERVER, SYSLOG_PORT and SYSLOG_PROTO are required.")
+
     handler = SysLogHandler(
-        address=(env['SYSLOG_SERVER'], int(env['SYSLOG_PORT'])),
-        socktype=socket.SOCK_DGRAM
-        if env['SYSLOG_PROTO'] == 'udp'
-        else socket.SOCK_STREAM,
+        address=(host, port),
+        socktype=socktype,
     )
     handler.setFormatter(PalletFormatter())
 
