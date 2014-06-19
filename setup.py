@@ -23,7 +23,7 @@ with open('requirements.txt') as requirements, \
         open('test_requirements.txt') as test_requirements:
     setup(
         name='supervisor-logging',
-        version='0.0.1',
+        version='0.0.2',
         description='Stream supervisord logs to a syslog instance',
         author='Infoxchange development team',
         author_email='devs@infoxchange.net.au',
