@@ -51,18 +51,17 @@ class SupervisorLoggingTestCase(TestCase):
         try:
             threading.Thread(target=syslog.serve_forever).start()
 
-            os.environ['SYSLOG_HOST'] = syslog.server_address[0]
-            os.environ['SYSLOG_PORT'] = str(syslog.server_address[1])
-            os.environ['SYSLOG_PROTO'] = 'udp'
+            env = os.environ.copy()
+            env['SYSLOG_SERVER'] = syslog.server_address[0]
+            env['SYSLOG_PORT'] = str(syslog.server_address[1])
+            env['SYSLOG_PROTO'] = 'udp'
 
             mydir = os.path.dirname(__file__)
 
-            os.environ['PATH'] = mydir + ':' + os.environ['PATH']
-            supervisor = subprocess.Popen([
-                'supervisord',
-                '-c',
-                os.path.join(mydir, 'supervisord.conf')
-            ])
+            supervisor = subprocess.Popen(
+                ['supervisord', '-c', os.path.join(mydir, 'supervisord.conf')],
+                env=env,
+            )
             try:
 
                 sleep(10)

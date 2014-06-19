@@ -17,7 +17,7 @@ Usage
 The Syslog instance to send the events to is configured with the environment
 variables:
 
-* `SYSLOG_HOST`
+* `SYSLOG_SERVER`
 * `SYSLOG_PORT`
 * `SYSLOG_PROTO`
 
