@@ -83,7 +83,7 @@ class SupervisorLoggingTestCase(TestCase):
             )
             try:
 
-                sleep(10)
+                sleep(3)
 
                 self.assertEqual(
                     list(map(strip_volatile, messages)),
