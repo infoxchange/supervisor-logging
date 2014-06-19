@@ -69,7 +69,7 @@ class SupervisorLoggingTestCase(TestCase):
                 self.assertEqual(
                     messages,
                     [
-                        'test message',
+                        'Test message',
                     ]
                 )
             finally:

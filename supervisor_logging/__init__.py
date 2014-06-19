@@ -23,8 +23,32 @@ from __future__ import print_function
 import logging
 import logging.handlers
 import os
+import re
 import socket
 import sys
+
+
+class PalletFormatter(logging.Formatter):
+    """
+    A formatter for the Pallet environment.
+    """
+
+    HOSTNAME = re.sub(
+        r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
+    FORMAT = '%(asctime)s {hostname} %(name)s[%(process)d]: %(message)s'.\
+        format(hostname=HOSTNAME)
+    DATE_FORMAT = '%b %d %H:%M:%S'
+
+    def __init__(self):
+        super(PalletFormatter, self).__init__(fmt=self.FORMAT,
+                                              datefmt=self.DATE_FORMAT)
+
+    def format(self, record):
+        # strip newlines
+        message = super(PalletFormatter, self).format(record)
+        message = message.replace('\n', ' ')
+        message += '\n'
+        return message
 
 
 class SysLogHandler(logging.handlers.SysLogHandler):
@@ -86,14 +110,15 @@ def main():
         if env['SYSLOG_PROTO'] == 'udp'
         else socket.SOCK_STREAM,
     )
+    handler.setFormatter(PalletFormatter())
 
     for event_headers, event_data in supervisor_events(sys.stdin, sys.stdout):
         handler.handle(logging.LogRecord(
-            name='logname',
+            name=event_headers['processname'],
             level=logging.INFO,
             pathname=None,
             lineno=0,
-            msg=str((event_headers, event_data)),
+            msg=event_data,
             args=(),
             exc_info=None,
         ))
