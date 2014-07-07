@@ -119,7 +119,7 @@ def main():
     handler.setFormatter(PalletFormatter())
 
     for event_headers, event_data in supervisor_events(sys.stdin, sys.stdout):
-        handler.handle(logging.LogRecord(
+        event = logging.LogRecord(
             name=event_headers['processname'],
             level=logging.INFO,
             pathname=None,
@@ -127,7 +127,9 @@ def main():
             msg=event_data,
             args=(),
             exc_info=None,
-        ))
+        )
+        event.process = int(event_headers['pid'])
+        handler.handle(event)
 
 
 if __name__ == '__main__':
