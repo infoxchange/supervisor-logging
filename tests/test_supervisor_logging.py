@@ -84,20 +84,20 @@ class SupervisorLoggingTestCase(TestCase):
             )
             try:
 
-                sleep(4)
+                sleep(3)
 
                 pid = subprocess.check_output(
                     ['supervisorctl', 'pid', 'messages']
                 ).strip()
 
-                sleep(7)
+                sleep(8)
 
                 self.assertEqual(
                     list(map(strip_volatile, messages)),
                     ['<14>DATE HOST messages[{pid}]: Test {i} \n\x00'.format(
                         pid=pid,
                         i=i)
-                     for i in range(5)]
+                     for i in range(4)]
                 )
             finally:
                 supervisor.terminate()
