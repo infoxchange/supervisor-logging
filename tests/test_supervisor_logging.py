@@ -35,7 +35,6 @@ def strip_volatile(message):
     """
 
     volatile = (
-        (r'\[\d+\]', '[PID]'),
         (socket.gethostname(), 'HOST'),
         (r'\w{3} \d{2} \d{2}:\d{2}:\d{2}', 'DATE'),
     )
@@ -85,11 +84,19 @@ class SupervisorLoggingTestCase(TestCase):
             )
             try:
 
-                sleep(11)
+                sleep(4)
+
+                pid = subprocess.check_output(
+                    ['supervisorctl', 'pid', 'messages']
+                ).strip()
+
+                sleep(7)
 
                 self.assertEqual(
                     list(map(strip_volatile, messages)),
-                    ['<14>DATE HOST messages[PID]: Test {0} \n\x00'.format(i)
+                    ['<14>DATE HOST messages[{pid}]: Test {i} \n\x00'.format(
+                        pid=pid,
+                        i=i)
                      for i in range(5)]
                 )
             finally:
