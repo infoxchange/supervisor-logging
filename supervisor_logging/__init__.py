@@ -33,22 +33,22 @@ class PalletFormatter(logging.Formatter):
     A formatter for the Pallet environment.
     """
 
-    HOSTNAME = re.sub(
-        r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
-    FORMAT = '%(asctime)s {hostname} %(name)s[%(process)d]: %(message)s'.\
-        format(hostname=HOSTNAME)
-    DATE_FORMAT = '%b %d %H:%M:%S'
+    HOSTNAME = re.sub(r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
+    DEFAULT_MESSAGE_FORMAT = '%(asctime)s %(hostname)s %(name)s[%(process)d]: %(message)s'
+    DEFAULT_DATE_FORMAT    = '%b %d %H:%M:%S'
 
     def __init__(self):
-        super(PalletFormatter, self).__init__(fmt=self.FORMAT,
-                                              datefmt=self.DATE_FORMAT)
+        super(PalletFormatter, self).__init__(fmt=self.message_format(), datefmt=self.date_format())
 
     def format(self, record):
-        # strip newlines
-        message = super(PalletFormatter, self).format(record)
-        message = message.replace('\n', ' ')
-        message += '\n'
-        return message
+        return super(PalletFormatter, self).format(record).replace('\n', ' ') + '\n'
+
+    def message_format(self):
+        fmt = os.environ.get('SYSLOG_MESSAGE_FORMATTER', self.__class__.DEFAULT_MESSAGE_FORMAT)
+        return fmt.replace('%(hostname)s', self.__class__.HOSTNAME)  # Accepts hostname in the form of %(hostname)s
+
+    def date_format(self):
+        return os.environ.get('SYSLOG_DATE_FORMATTER', self.__class__.DEFAULT_DATE_FORMAT)
 
 
 class SysLogHandler(logging.handlers.SysLogHandler):
@@ -107,8 +107,7 @@ def main():
     try:
         host = env['SYSLOG_SERVER']
         port = int(env['SYSLOG_PORT'])
-        socktype = socket.SOCK_DGRAM if env['SYSLOG_PROTO'] == 'udp' \
-            else socket.SOCK_STREAM
+        socktype = socket.SOCK_DGRAM if env['SYSLOG_PROTO'] == 'udp' else socket.SOCK_STREAM
     except KeyError:
         sys.exit("SYSLOG_SERVER, SYSLOG_PORT and SYSLOG_PROTO are required.")
 
