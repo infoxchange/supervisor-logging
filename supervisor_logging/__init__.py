@@ -102,14 +102,10 @@ def main():
     Main application loop.
     """
 
-    env = os.environ
-
-    try:
-        host = env['SYSLOG_SERVER']
-        port = int(env['SYSLOG_PORT'])
-        socktype = socket.SOCK_DGRAM if env['SYSLOG_PROTO'] == 'udp' else socket.SOCK_STREAM
-    except KeyError:
-        sys.exit("SYSLOG_SERVER, SYSLOG_PORT and SYSLOG_PROTO are required.")
+    host     = os.environ.get('SYSLOG_SERVER', '127.0.0.1')
+    port     = int(os.environ.get('SYSLOG_PORT', '514'))
+    proto    = os.environ.get('SYSLOG_PROTO', 'udp')
+    socktype = socket.SOCK_DGRAM if proto == 'udp' else socket.SOCK_STREAM
 
     handler = SysLogHandler(
         address=(host, port),
