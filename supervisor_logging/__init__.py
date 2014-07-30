@@ -33,22 +33,39 @@ class PalletFormatter(logging.Formatter):
     A formatter for the Pallet environment.
     """
 
-    HOSTNAME = re.sub(r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
-    DEFAULT_MESSAGE_FORMAT = '%(asctime)s %(hostname)s %(name)s[%(process)d]: %(message)s'
-    DEFAULT_DATE_FORMAT    = '%b %d %H:%M:%S'
+    HOSTNAME = re.sub(
+        r':\d+$',
+        '',
+        os.environ.get('SITE_DOMAIN', socket.gethostname())
+    )
+    DFLT_DATE_FORMAT = '%b %d %H:%M:%S'
+    DFLT_MSG_FORMAT = \
+        '%(asctime)s %(hostname)s %(name)s[%(process)d]: %(message)s'
 
     def __init__(self):
-        super(PalletFormatter, self).__init__(fmt=self.message_format(), datefmt=self.date_format())
+        super(PalletFormatter, self).__init__(
+            fmt=self.message_format(), datefmt=self.date_format()
+        )
 
     def format(self, record):
-        return super(PalletFormatter, self).format(record).replace('\n', ' ') + '\n'
+        message = super(PalletFormatter, self).format(record)
+        return message.replace('\n', ' ') + '\n'
 
     def message_format(self):
-        fmt = os.environ.get('SYSLOG_MESSAGE_FORMAT', self.__class__.DEFAULT_MESSAGE_FORMAT)
-        return fmt.replace('%(hostname)s', self.__class__.HOSTNAME)  # Accepts hostname in the form of %(hostname)s
+        fmt = os.environ.get(
+            'SYSLOG_MESSAGE_FORMAT',
+            self.__class__.DFLT_MSG_FORMAT
+        )
+        return fmt.replace(
+            '%(hostname)s',
+            self.__class__.HOSTNAME
+        )  # Accepts hostname in the form of %(hostname)s
 
     def date_format(self):
-        return os.environ.get('SYSLOG_DATE_FORMAT', self.__class__.DEFAULT_DATE_FORMAT)
+        return os.environ.get(
+            'SYSLOG_DATE_FORMAT',
+            self.__class__.DFLT_DATE_FORMAT
+        )
 
 
 class SysLogHandler(logging.handlers.SysLogHandler):
@@ -102,9 +119,9 @@ def main():
     Main application loop.
     """
 
-    host     = os.environ.get('SYSLOG_SERVER', '127.0.0.1')
-    port     = int(os.environ.get('SYSLOG_PORT', '514'))
-    proto    = os.environ.get('SYSLOG_PROTO', 'udp')
+    host = os.environ.get('SYSLOG_SERVER', '127.0.0.1')
+    port = int(os.environ.get('SYSLOG_PORT', '514'))
+    proto = os.environ.get('SYSLOG_PROTO', 'udp')
     socktype = socket.SOCK_DGRAM if proto == 'udp' else socket.SOCK_STREAM
 
     handler = SysLogHandler(
