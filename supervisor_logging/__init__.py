@@ -44,11 +44,11 @@ class PalletFormatter(logging.Formatter):
         return super(PalletFormatter, self).format(record).replace('\n', ' ') + '\n'
 
     def message_format(self):
-        fmt = os.environ.get('SYSLOG_MESSAGE_FORMATTER', self.__class__.DEFAULT_MESSAGE_FORMAT)
+        fmt = os.environ.get('SYSLOG_MESSAGE_FORMAT', self.__class__.DEFAULT_MESSAGE_FORMAT)
         return fmt.replace('%(hostname)s', self.__class__.HOSTNAME)  # Accepts hostname in the form of %(hostname)s
 
     def date_format(self):
-        return os.environ.get('SYSLOG_DATE_FORMATTER', self.__class__.DEFAULT_DATE_FORMAT)
+        return os.environ.get('SYSLOG_DATE_FORMAT', self.__class__.DEFAULT_DATE_FORMAT)
 
 
 class SysLogHandler(logging.handlers.SysLogHandler):
