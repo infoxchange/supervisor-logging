@@ -45,4 +45,3 @@ class SupervisorLoggingDateFormatTestCase(TestCase):
         date_format = PalletFormatter().date_format()
         self.assertEqual(d.strftime(date_format), 'Jan 01 01:00:00')
         os.environ['SYSLOG_DATE_FORMAT'] = PalletFormatter.DFLT_DATE_FORMAT
-
