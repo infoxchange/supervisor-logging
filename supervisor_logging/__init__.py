@@ -38,7 +38,7 @@ class PalletFormatter(logging.Formatter):
         '',
         os.environ.get('SITE_DOMAIN', socket.gethostname())
     )
-    DFLT_DATE_FORMAT = '%b %d %H:%M:%S'
+    DFLT_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
     DFLT_MSG_FORMAT = \
         '%(asctime)s %(hostname)s %(name)s[%(process)d]: %(message)s'
 
