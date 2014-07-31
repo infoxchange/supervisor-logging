@@ -38,8 +38,8 @@ class PalletFormatter(logging.Formatter):
         '',
         os.environ.get('SITE_DOMAIN', socket.gethostname())
     )
-    DFLT_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
-    DFLT_MSG_FORMAT = \
+    DEFAULT_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
+    DEFAULT_MSG_FORMAT = \
         '%(asctime)s %(hostname)s %(name)s[%(process)d]: %(message)s'
 
     def __init__(self):
@@ -55,12 +55,12 @@ class PalletFormatter(logging.Formatter):
         """
         Use user defined message format via
         os.environ['SYSLOG_MESSAGE_FORMAT'] or
-        DFLT_MSG_FORMAT as default.
+        DEFAULT_MSG_FORMAT as default.
         """
 
         fmt = os.environ.get(
             'SYSLOG_MESSAGE_FORMAT',
-            self.__class__.DFLT_MSG_FORMAT
+            self.__class__.DEFAULT_MSG_FORMAT
         )
         return fmt.replace(
             '%(hostname)s',
@@ -71,11 +71,11 @@ class PalletFormatter(logging.Formatter):
         """
         Use user defined date format via
         os.environ['SYSLOG_DATE_FORMAT'] or
-        DFLT_DATE_FORMAT as default.
+        DEFAULT_DATE_FORMAT as default.
         """
         return os.environ.get(
             'SYSLOG_DATE_FORMAT',
-            self.__class__.DFLT_DATE_FORMAT
+            self.__class__.DEFAULT_DATE_FORMAT
         )
 
 
