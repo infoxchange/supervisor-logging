@@ -60,11 +60,11 @@ class PalletFormatter(logging.Formatter):
 
         fmt = os.environ.get(
             'SYSLOG_MESSAGE_FORMAT',
-            self.__class__.DEFAULT_MESSAGE_FORMAT
+            self.DEFAULT_MESSAGE_FORMAT
         )
         return fmt.replace(
             '%(hostname)s',
-            self.__class__.HOSTNAME
+            self.HOSTNAME
         )  # Accepts hostname in the form of %(hostname)s
 
     def date_format(self):
@@ -75,7 +75,7 @@ class PalletFormatter(logging.Formatter):
         """
         return os.environ.get(
             'SYSLOG_DATE_FORMAT',
-            self.__class__.DEFAULT_DATE_FORMAT
+            self.DEFAULT_DATE_FORMAT
         )
 
 
