@@ -32,16 +32,16 @@ class SupervisorLoggingDateFormatTestCase(TestCase):
         """
         Test default date format.
         """
-        d = datetime.datetime(2000, 1, 1, 1, 0, 0)
+        date = datetime.datetime(2000, 1, 1, 1, 0, 0)
         date_format = PalletFormatter().date_format()
-        self.assertEqual(d.strftime(date_format), '2000-01-01T01:00:00')
+        self.assertEqual(date.strftime(date_format), '2000-01-01T01:00:00')
 
     def test_custom_date_format(self):
         """
         Test custom date format.
         """
-        d = datetime.datetime(2000, 1, 1, 1, 0, 0)
+        date = datetime.datetime(2000, 1, 1, 1, 0, 0)
         os.environ['SYSLOG_DATE_FORMAT'] = '%b %d %H:%M:%S'
         date_format = PalletFormatter().date_format()
-        self.assertEqual(d.strftime(date_format), 'Jan 01 01:00:00')
+        self.assertEqual(date.strftime(date_format), 'Jan 01 01:00:00')
         os.environ['SYSLOG_DATE_FORMAT'] = PalletFormatter.DEFAULT_DATE_FORMAT
