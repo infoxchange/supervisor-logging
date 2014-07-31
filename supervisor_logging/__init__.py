@@ -71,7 +71,7 @@ class PalletFormatter(logging.Formatter):
         """
         Use user defined date format via
         os.environ['SYSLOG_DATE_FORMAT'] or
-        DFLT_MSG_FORMAT as default.
+        DFLT_DATE_FORMAT as default.
         """
         return os.environ.get(
             'SYSLOG_DATE_FORMAT',
