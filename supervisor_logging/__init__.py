@@ -52,6 +52,12 @@ class PalletFormatter(logging.Formatter):
         return message.replace('\n', ' ') + '\n'
 
     def message_format(self):
+        """
+        Use user defined message format via
+        os.environ['SYSLOG_MESSAGE_FORMAT'] or
+        DFLT_MSG_FORMAT as default.
+        """
+
         fmt = os.environ.get(
             'SYSLOG_MESSAGE_FORMAT',
             self.__class__.DFLT_MSG_FORMAT
@@ -62,6 +68,11 @@ class PalletFormatter(logging.Formatter):
         )  # Accepts hostname in the form of %(hostname)s
 
     def date_format(self):
+        """
+        Use user defined date format via
+        os.environ['SYSLOG_DATE_FORMAT'] or
+        DFLT_MSG_FORMAT as default.
+        """
         return os.environ.get(
             'SYSLOG_DATE_FORMAT',
             self.__class__.DFLT_DATE_FORMAT
