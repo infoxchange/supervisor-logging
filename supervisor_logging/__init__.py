@@ -26,6 +26,7 @@ import os
 import re
 import socket
 import sys
+import time
 
 
 class PalletFormatter(logging.Formatter):
@@ -37,7 +38,9 @@ class PalletFormatter(logging.Formatter):
         r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
     FORMAT = '%(asctime)s {hostname} %(name)s[%(process)d]: %(message)s'.\
         format(hostname=HOSTNAME)
-    DATE_FORMAT = '%b %d %H:%M:%S'
+    DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+    converter = time.gmtime
 
     def __init__(self):
         super(PalletFormatter, self).__init__(fmt=self.FORMAT,
