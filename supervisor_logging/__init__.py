@@ -38,13 +38,22 @@ class PalletFormatter(logging.Formatter):
         r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
     FORMAT = '%(asctime)s {hostname} %(name)s[%(process)d]: %(message)s'.\
         format(hostname=HOSTNAME)
-    DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+    DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
     converter = time.gmtime
 
     def __init__(self):
         super(PalletFormatter, self).__init__(fmt=self.FORMAT,
                                               datefmt=self.DATE_FORMAT)
+
+    def formatTime(self, record, datefmt=None):
+        """
+        Format time, including milliseconds.
+        """
+
+        formatted = super(PalletFormatter, self).formatTime(
+            record, datefmt=datefmt)
+        return formatted + '.%03dZ' % record.msecs
 
     def format(self, record):
         # strip newlines

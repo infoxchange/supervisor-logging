@@ -36,7 +36,7 @@ def strip_volatile(message):
 
     volatile = (
         (socket.gethostname(), 'HOST'),
-        (r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', 'DATE'),
+        (r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z', 'DATE'),
     )
 
     for regexp, replacement in volatile:
