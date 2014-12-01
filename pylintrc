@@ -52,9 +52,6 @@ comment=no
 # used to format the message information. See doc for all details
 #msg-template=
 
-include-ids=no
-symbols=yes
-
 
 [MESSAGES CONTROL]
 
@@ -79,6 +76,7 @@ disable=
     no-self-use,
     star-args,
     super-on-old-class,
+    too-few-public-methods,
     too-many-public-methods,
     RP0101,
     RP0401,
