@@ -4,5 +4,5 @@ __pycache__
 /.coverage
 /build
 /dist
-/supervisor-logging.egg-info
+/supervisor_logging.egg-info
 /htmlcov
