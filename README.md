@@ -29,4 +29,12 @@ command = supervisor_logging
 events = PROCESS_LOG
 ```
 
+Enable the log events in your program:
+
+```
+[program:yourprogram]
+stdout_events_enabled = true
+stderr_events_enabled = true
+```
+
 [supervisor]: http://supervisord.org/
