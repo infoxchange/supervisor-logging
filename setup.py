@@ -20,12 +20,13 @@ Setup script.
 from sys import exit, version_info
 from setuptools import setup, find_packages
 
-if not version_info[0] == 2 or not version_info[1] >= 7:
+if not version_info[0] == 2 or not version_info[1] >= 6:
     print "Python 2.7 or higher required (and no python 3, sorry)"
     exit(1)
 
-with open('requirements.txt') as requirements, \
-        open('test_requirements.txt') as test_requirements:
+try:
+    requirements = open('requirements.txt')
+    test_requirements = open('test_requirements.txt')
     setup(
         name='supervisor-logging',
         version='0.0.8',
@@ -42,16 +43,23 @@ with open('requirements.txt') as requirements, \
                 'README.md',
                 'requirements.txt',
                 'test_requirements.txt',
-            ],
-        },
+                "setup.py"
+                'README.md',
+                'requirements.txt',
+                'test_requirements.txt',
+                ],
+            },
         entry_points={
             'console_scripts': [
                 'supervisor_logging = supervisor_logging:main',
-            ],
-        },
+                ],
+            },
 
         install_requires=requirements.read().splitlines(),
 
         test_suite='tests',
         tests_require=test_requirements.read().splitlines(),
-    )
+        )
+finally:
+    requirements.close()
+    test_requirements.close()
