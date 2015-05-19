@@ -17,7 +17,12 @@
 Setup script.
 """
 
+from sys import exit, version_info
 from setuptools import setup, find_packages
+
+if not version_info[0] == 2 or not version_info[1] >= 7:
+    print "Python 2.7 or higher required (and no python 3, sorry)"
+    exit(1)
 
 with open('requirements.txt') as requirements, \
         open('test_requirements.txt') as test_requirements:
