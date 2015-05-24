@@ -13,9 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Forked from https://github.com/infoxchange/supervisor-logging and modified to log to graylog by Peter Froehlich
+#
 
 """
-Send received events to a syslog instance.
+Send received events to graylog over GELF/UDP.
 """
 
 from __future__ import print_function
@@ -23,52 +26,12 @@ from __future__ import print_function
 import logging
 import logging.handlers
 import os
-import re
-import socket
 import sys
-import time
+import re
 
+import graypy
 
-class PalletFormatter(logging.Formatter):
-    """
-    A formatter for the Pallet environment.
-    """
-
-    HOSTNAME = re.sub(
-        r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
-    FORMAT = '%(asctime)s {hostname} %(name)s[%(process)d]: %(message)s'.\
-        format(hostname=HOSTNAME)
-    DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
-
-    converter = time.gmtime
-
-    def __init__(self):
-        super(PalletFormatter, self).__init__(fmt=self.FORMAT,
-                                              datefmt=self.DATE_FORMAT)
-
-    def formatTime(self, record, datefmt=None):
-        """
-        Format time, including milliseconds.
-        """
-
-        formatted = super(PalletFormatter, self).formatTime(
-            record, datefmt=datefmt)
-        return formatted + '.%03dZ' % record.msecs
-
-    def format(self, record):
-        # strip newlines
-        message = super(PalletFormatter, self).format(record)
-        message = message.replace('\n', ' ')
-        message += '\n'
-        return message
-
-
-class SysLogHandler(logging.handlers.SysLogHandler):
-    """
-    A SysLogHandler not appending NUL character to messages
-    """
-    append_nul = False
-
+level_match_expr = "[0-9]*\/[0-9]*\/[0-9]* [0-9]*:[0-9]*:[0-9]* ([A-Z]*) (.*)"
 
 def get_headers(line):
     """
@@ -98,6 +61,7 @@ def supervisor_events(stdin, stdout):
         stdout.flush()
 
         line = stdin.readline()
+
         headers = get_headers(line)
 
         payload = stdin.read(int(headers['len']))
@@ -109,37 +73,58 @@ def supervisor_events(stdin, stdout):
         stdout.flush()
 
 
+def split_msg_and_get_log_level(event_data, level_match):
+    """
+    Strip out syslog timestamp and try to match the level to the syslog level
+    """
+
+    match_obj = level_match.match(event_data)
+
+    try:
+        if match_obj.group(1) in ["DEBUG", "INFO", "WARN", "WARNING", "ERROR", "CRITICAL", "FATAL"]:
+            level = eval("logging."+match_obj.group(1))
+        else:
+            level = logging.INFO
+    except IndexError:
+        level = logging.INFO
+
+    try:
+        body = match_obj.group(2)
+    except IndexError:
+        body = event_data
+
+    return level, body
+
+
 def main():
-    """
-    Main application loop.
-    """
 
     env = os.environ
 
     try:
-        host = env['SYSLOG_SERVER']
-        port = int(env['SYSLOG_PORT'])
-        socktype = socket.SOCK_DGRAM if env['SYSLOG_PROTO'] == 'udp' \
-            else socket.SOCK_STREAM
-    except KeyError:
-        sys.exit("SYSLOG_SERVER, SYSLOG_PORT and SYSLOG_PROTO are required.")
+        host = env['GRAYLOG_SERVER']
+        port = int(env['GRAYLOG_PORT'])
 
-    handler = SysLogHandler(
-        address=(host, port),
-        socktype=socktype,
-    )
-    handler.setFormatter(PalletFormatter())
+    except KeyError:
+        sys.exit("GRAYLOG_SERVER and GRAYLOG_PORT are required.")
+
+    sys.stderr.write("Starting with host: %s, port: %d" % (host, port))
+    sys.stderr.flush()
+
+    handler = graypy.GELFHandler(host, port)
+    level_match = re.compile(level_match_expr)
 
     for event_headers, event_data in supervisor_events(sys.stdin, sys.stdout):
+        level, body = split_msg_and_get_log_level(event_data, level_match)
+
         event = logging.LogRecord(
             name=event_headers['processname'],
-            level=logging.INFO,
+            level=level,
             pathname=None,
             lineno=0,
-            msg=event_data,
+            msg=body,
             args=(),
             exc_info=None,
-        )
+            )
         event.process = int(event_headers['pid'])
         handler.handle(event)
 

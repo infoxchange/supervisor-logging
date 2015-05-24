@@ -1,8 +1,7 @@
 Supervisor-logging
 ==================
 
-A [supervisor] plugin to stream events to an external Syslog instance (for
-example, Logstash).
+A [supervisor] plugin to stream events to an external Graylog instance.
 
 Installation
 ------------
@@ -10,18 +9,19 @@ Installation
 Python 2.7 is required.
 
 ```
-pip install supervisor-logging
+git clone https://github.com/peterfroehlich/supervisor-logging.git
+cd supervisor-logging
+python setup.py install
 ```
 
 Usage
 -----
 
-The Syslog instance to send the events to is configured with the environment
+The Graylog server to send the events to is configured with the environment
 variables:
 
-* `SYSLOG_SERVER`
-* `SYSLOG_PORT`
-* `SYSLOG_PROTO`
+* `GRAYLOG_SERVER`
+* `GRAYLOG_PORT`
 
 Add the plugin as an event listener:
 
