@@ -91,7 +91,7 @@ class SupervisorLoggingTestCase(TestCase):
 
                 pid = subprocess.check_output(
                     ['supervisorctl', 'pid', 'messages']
-                ).strip()
+                ).decode().strip()
 
                 sleep(8)
 
