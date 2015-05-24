@@ -7,6 +7,8 @@ example, Logstash).
 Installation
 ------------
 
+Python 2.7 is required.
+
 ```
 pip install supervisor-logging
 ```
