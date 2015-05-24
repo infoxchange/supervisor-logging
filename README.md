@@ -7,11 +7,15 @@ example, Logstash).
 Installation
 ------------
 
-Python 2.7 is required.
+Python 2.7 or Python 3.2+ is required.
 
 ```
 pip install supervisor-logging
 ```
+
+Note that supervisor itself does not yet work on Python 3, though it can be
+installed in a separate environment (because supervisor-logging is a separate
+process).
 
 Usage
 -----
