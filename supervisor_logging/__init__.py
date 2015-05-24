@@ -21,12 +21,12 @@ Send received events to a syslog instance.
 from __future__ import print_function
 
 import logging
-import logging.handlers
 import os
 import re
 import socket
 import sys
 import time
+from logging.handlers import SysLogHandler
 
 
 class PalletFormatter(logging.Formatter):
@@ -61,13 +61,6 @@ class PalletFormatter(logging.Formatter):
         message = message.replace('\n', ' ')
         message += '\n'
         return message
-
-
-class SysLogHandler(logging.handlers.SysLogHandler):
-    """
-    A SysLogHandler not appending NUL character to messages
-    """
-    append_nul = False
 
 
 def get_headers(line):
