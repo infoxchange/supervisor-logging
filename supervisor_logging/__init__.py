@@ -116,10 +116,11 @@ def main():
             else socket.SOCK_STREAM
     except KeyError:
         sys.exit("SYSLOG_SERVER, SYSLOG_PORT and SYSLOG_PROTO are required.")
-
+    facility = env.get('SYSLOG_FACILITY', 1)
     handler = SysLogHandler(
         address=(host, port),
         socktype=socktype,
+        facility=facility
     )
     handler.setFormatter(PalletFormatter())
 

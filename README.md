@@ -26,6 +26,7 @@ variables:
 * `SYSLOG_SERVER`
 * `SYSLOG_PORT`
 * `SYSLOG_PROTO`
+* `SYSLOG_FACILITY`
 
 Add the plugin as an event listener:
 
