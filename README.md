@@ -27,7 +27,7 @@ variables:
 * `SYSLOG_PORT`
 * `SYSLOG_PROTO`
 
-Add the plugin as an event listener:
+Add the plugin as an event listener in your `supervisord.conf` file:
 
 ```
 [eventlistener:logging]
