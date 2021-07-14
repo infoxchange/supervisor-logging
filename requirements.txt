@@ -1,0 +1,1 @@
+safe_syslog_handler==0.2.0
