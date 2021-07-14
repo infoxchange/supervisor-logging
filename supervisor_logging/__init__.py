@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 #
 # Copyright 2014  Infoxchange Australia
 #
@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,12 @@ import re
 import socket
 import sys
 import time
-from logging.handlers import SysLogHandler
+from safe_syslog_handler.handlers import SafeSysLogHandler
+
+SOCKET_PARAM = {
+    'udp': socket.SOCK_DGRAM, 
+    'tcp': socket.SOCK_STREAM
+}
 
 
 class PalletFormatter(logging.Formatter):
@@ -34,8 +39,7 @@ class PalletFormatter(logging.Formatter):
     A formatter for the Pallet environment.
     """
 
-    HOSTNAME = re.sub(
-        r':\d+$', '', os.environ.get('SITE_DOMAIN', socket.gethostname()))
+    HOSTNAME = socket.gethostname()
     FORMAT = '%(asctime)s {hostname} %(name)s[%(process)d]: %(message)s'.\
         format(hostname=HOSTNAME)
     DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
@@ -43,20 +47,19 @@ class PalletFormatter(logging.Formatter):
     converter = time.gmtime
 
     def __init__(self):
-        super(PalletFormatter, self).__init__(fmt=self.FORMAT,
-                                              datefmt=self.DATE_FORMAT)
+        super(PalletFormatter, self).__init__(
+            fmt=self.FORMAT, 
+            datefmt=self.DATE_FORMAT
+        )
 
     def formatTime(self, record, datefmt=None):
         """
         Format time, including milliseconds.
         """
-
-        formatted = super(PalletFormatter, self).formatTime(
-            record, datefmt=datefmt)
+        formatted = super(PalletFormatter, self).formatTime(record, datefmt=datefmt)
         return formatted + '.%03dZ' % record.msecs
 
     def format(self, record):
-        # strip newlines
         message = super(PalletFormatter, self).format(record)
         message = message.replace('\n', ' ')
         message += '\n'
@@ -112,15 +115,15 @@ def main():
     try:
         host = env['SYSLOG_SERVER']
         port = int(env['SYSLOG_PORT'])
-        socktype = socket.SOCK_DGRAM if env['SYSLOG_PROTO'] == 'udp' \
-            else socket.SOCK_STREAM
+        socktype = SOCKET_PARAM[env['SYSLOG_PROTO'].lower()]
     except KeyError:
         sys.exit("SYSLOG_SERVER, SYSLOG_PORT and SYSLOG_PROTO are required.")
 
-    handler = SysLogHandler(
+    handler = SafeSysLogHandler(
         address=(host, port),
-        socktype=socktype,
+        socktype=socktype
     )
+
     handler.setFormatter(PalletFormatter())
 
     for event_headers, event_data in supervisor_events(sys.stdin, sys.stdout):
@@ -133,6 +136,7 @@ def main():
             args=(),
             exc_info=None,
         )
+
         event.process = int(event_headers['pid'])
         handler.handle(event)
 
